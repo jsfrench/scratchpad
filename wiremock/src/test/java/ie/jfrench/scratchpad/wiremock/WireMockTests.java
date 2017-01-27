@@ -1,12 +1,8 @@
 package ie.jfrench.scratchpad.wiremock;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static io.restassured.RestAssured.given;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import static org.hamcrest.Matchers.equalTo;
 import org.junit.Before;
@@ -24,28 +20,70 @@ public class WireMockTests {
 
     @Before
     public void setupStub() {
-        stubFor(get(urlPathEqualTo("/services/EventingConnector"))
-                .willReturn(aResponse()
-                        .withHeader("Content-Type", "text/plain")
-                        .withStatus(200)
-                        .withBody("You've reached a valid WireMock endpoint")));
+        // Stub GET
+        stubFor(get(urlPathEqualTo("/events"))
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "text/plain")
+                .withStatus(200)
+                .withBody("You've reached the /event endpoint")));
+        
+        // Stub POST
+        stubFor(post(urlPathEqualTo("/events"))
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "text/plain")
+                .withStatus(200)
+                .withBody("You've reached the /event endpoint")
+            )
+        );
+        
+        // Stub DELETE with regex match for id path parameter
+        stubFor(delete(urlMatching("/events/id/([A-Za-z0-9]+)"))
+            .willReturn(aResponse()
+                .withHeader("Content-Type", "text/plain")
+                .withStatus(200)
+                .withBody("You've reached the event endpoint")
+            )
+        );        
     }
 
+    // Test GET request with query paramater is matched
     @Test
-    public void testStatusCodePositive() throws UnknownHostException {
-        given().
-                when().
-                get("http://localhost:8080/services/EventingConnector?affinity=" + InetAddress.getLocalHost().getHostAddress()).
-                then().
-                assertThat().statusCode(200);
+    public void testStatusCodePositiveGet() {
+        // Test request with query paramater is matched
+        given()
+            .when()
+            .get("http://localhost:8080/events?affinity=" + "127.0.0.1")
+            .then()
+            .assertThat().statusCode(200);
     }
 
+    // Test POST request with query paramater is matched
+    @Test
+    public void testStatusCodePositivePost() {
+        given()
+            .when()
+            .post("http://localhost:8080/events?affinity=" + "127.0.0.1")
+            .then()
+            .assertThat().statusCode(200);
+    }
+    
+    // Test response body
     @Test
     public void testContents() throws UnknownHostException {
-        given().
-                when().
-                get("http://localhost:8080/services/EventingConnector?affinity=" + InetAddress.getLocalHost().getHostAddress()).
-                then().
-                assertThat().body(equalTo("You've reached a valid WireMock endpoint"));
+        given()
+            .when()
+            .get("http://localhost:8080/events?affinity=" + "127.0.0.1")
+            .then()
+            .assertThat().body(equalTo("You've reached the /event endpoint"));
     }
+    
+    // Test DELETE request with path parameter is matched
+    @Test
+    public void testStatusCodeWithPathParameter() throws UnknownHostException {
+        given()
+            .when()
+            .delete("http://localhost:8080/events/id/" + "123")
+            .then()
+            .assertThat().statusCode(200);
+    }    
 }
