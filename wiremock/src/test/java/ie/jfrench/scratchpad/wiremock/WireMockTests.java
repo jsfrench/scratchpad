@@ -3,7 +3,6 @@ package ie.jfrench.scratchpad.wiremock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static io.restassured.RestAssured.given;
-import java.net.UnknownHostException;
 import static org.hamcrest.Matchers.equalTo;
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,68 +21,74 @@ public class WireMockTests {
     public void setupStub() {
         // Stub GET
         stubFor(get(urlPathEqualTo("/events"))
-            .willReturn(aResponse()
-                .withHeader("Content-Type", "text/plain")
-                .withStatus(200)
-                .withBody("You've reached the /event endpoint")));
-        
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "text/plain")
+                        .withStatus(200)
+                        .withBody("You've reached the /event endpoint")));
+
         // Stub POST
         stubFor(post(urlPathEqualTo("/events"))
-            .willReturn(aResponse()
-                .withHeader("Content-Type", "text/plain")
-                .withStatus(200)
-                .withBody("You've reached the /event endpoint")
-            )
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "text/plain")
+                        .withStatus(200)
+                        .withBody("You've reached the /event endpoint")
+                )
         );
-        
+
         // Stub DELETE with regex match for id path parameter
         stubFor(delete(urlMatching("/events/id/([A-Za-z0-9]+)"))
-            .willReturn(aResponse()
-                .withHeader("Content-Type", "text/plain")
-                .withStatus(200)
-                .withBody("You've reached the event endpoint")
-            )
-        );        
+                .willReturn(aResponse()
+                        .withHeader("Content-Type", "text/plain")
+                        .withStatus(200)
+                        .withBody("You've reached the event endpoint")
+                )
+        );
     }
 
     // Test GET request with query paramater is matched
     @Test
     public void testStatusCodePositiveGet() {
-        // Test request with query paramater is matched
         given()
-            .when()
-            .get("http://localhost:8080/events?affinity=" + "127.0.0.1")
-            .then()
-            .assertThat().statusCode(200);
+                .when()
+                .get("http://localhost:8080/events?affinity=" + "127.0.0.1")
+                .then()
+                .assertThat().statusCode(200);
     }
 
     // Test POST request with query paramater is matched
     @Test
     public void testStatusCodePositivePost() {
         given()
-            .when()
-            .post("http://localhost:8080/events?affinity=" + "127.0.0.1")
-            .then()
-            .assertThat().statusCode(200);
+                .when()
+                .post("http://localhost:8080/events?affinity=" + "127.0.0.1")
+                .then()
+                .assertThat().statusCode(200);
+
+        // Check WireMock journal for request
+        verify(postRequestedFor(urlPathEqualTo("/events")));
     }
-    
+
     // Test response body
     @Test
-    public void testContents() throws UnknownHostException {
+    public void testContents() {
         given()
-            .when()
-            .get("http://localhost:8080/events?affinity=" + "127.0.0.1")
-            .then()
-            .assertThat().body(equalTo("You've reached the /event endpoint"));
+                .when()
+                .get("http://localhost:8080/events?affinity=" + "127.0.0.1")
+                .then()
+                .assertThat().body(equalTo("You've reached the /event endpoint"));
     }
-    
+
     // Test DELETE request with path parameter is matched
     @Test
-    public void testStatusCodeWithPathParameter() throws UnknownHostException {
+    public void testStatusCodeWithPathParameter() {
+        //Verify response with RESTAssured
         given()
-            .when()
-            .delete("http://localhost:8080/events/id/" + "123")
-            .then()
-            .assertThat().statusCode(200);
-    }    
+                .when()
+                .delete("http://localhost:8080/events/id/" + "123")
+                .then()
+                .assertThat().statusCode(200);
+        
+        // Check WireMock journal for request
+        verify(deleteRequestedFor(urlMatching("/events/id/([A-Za-z0-9]+)")));        
+    }
 }
