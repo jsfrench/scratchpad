@@ -13,3 +13,7 @@ hs_err_pid*
 /wiremock/target/
 wiremock/nb-configuration.xml
 wiremock/nbactions.xml
+swaggerparsertesting/.idea/
+swaggerparsertesting/target/
+
+*.iml
