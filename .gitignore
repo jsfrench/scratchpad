@@ -17,3 +17,5 @@ swaggerparsertesting/.idea/
 swaggerparsertesting/target/
 
 *.iml
+.idea/
+*/target/
