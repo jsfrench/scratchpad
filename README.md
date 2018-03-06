@@ -7,4 +7,6 @@ A place to mess around with things.
 
 * **swagger-parser-testing**: Playing with the swagger parser, particularly for OAS3
 
-* **threads-concurrency-exercises**: Exercises from the book Java Threads and the Concurrency Utilities
+* **threads-concurrency-exercises**: Exercises from the book   Java Threads and the Concurrency Utilities
+
+* **assertj-swagger-testing**: Adding Auth to isEqualTo in assertj-swagger.
